@@ -38,7 +38,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
 
         // 创建时，所有参数必须非空
         if (add) {
-            if (StringUtils.isAnyBlank(name, url, requestHeader, responseHeader, method) || ObjectUtils.anyNull(userId)) {
+            if (StringUtils.isAnyBlank(name, url, requestHeader, responseHeader, method)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR);
             }
         }
@@ -51,11 +51,14 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         if (StringUtils.isNotBlank(description) && description.length() > 100) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口描述过长");
         }
-        if (StringUtils.isNotBlank(url) && name.length() > 512) {
+        if (StringUtils.isNotBlank(url) && name.length() > 500) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口地址过长");
         }
-        if (StringUtils.isNotBlank(requestHeader) && requestHeader.length() > 2048) {
+        if (StringUtils.isNotBlank(requestHeader) && requestHeader.length() > 3000) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求头内容过长");
+        }
+        if (StringUtils.isNotBlank(responseHeader) && responseHeader.length() > 3000) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "响应头内容过长");
         }
         if (status != null && (status != 0 && status != -1)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "状态类型不合法");
