@@ -2,20 +2,21 @@ package com.yanweiyi.miapi.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.gson.Gson;
 import com.yanweiyi.miapi.annotation.AuthCheck;
-import com.yanweiyi.miapi.common.BaseResponse;
-import com.yanweiyi.miapi.common.DeleteRequest;
-import com.yanweiyi.miapi.common.ErrorCode;
-import com.yanweiyi.miapi.common.ResultUtils;
+import com.yanweiyi.miapi.common.*;
 import com.yanweiyi.miapi.constant.CommonConstant;
 import com.yanweiyi.miapi.exception.BusinessException;
 import com.yanweiyi.miapi.model.dto.interfaceinfo.InterfaceInfoAddRequest;
+import com.yanweiyi.miapi.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import com.yanweiyi.miapi.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.yanweiyi.miapi.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import com.yanweiyi.miapi.model.entity.InterfaceInfo;
 import com.yanweiyi.miapi.model.entity.User;
+import com.yanweiyi.miapi.model.enums.InterfaceInfoStatusEnum;
 import com.yanweiyi.miapi.service.InterfaceInfoService;
 import com.yanweiyi.miapi.service.UserService;
+import com.yanweiyi.miapiclientsdk.client.MiApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -26,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
- * 帖子接口
+ * 接口管理
  *
  * @author yanweiyi
  */
@@ -40,6 +41,9 @@ public class InterfaceInfoController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private MiApiClient miApiClient;
 
     // region 增删改查
 
@@ -104,8 +108,7 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody InterfaceInfoUpdateRequest interfaceInfoUpdateRequest,
-                                            HttpServletRequest request) {
+    public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody InterfaceInfoUpdateRequest interfaceInfoUpdateRequest, HttpServletRequest request) {
         if (interfaceInfoUpdateRequest == null || interfaceInfoUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -196,4 +199,93 @@ public class InterfaceInfoController {
 
     // endregion
 
+    /**
+     * 发布
+     *
+     * @param idRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/online")
+    @AuthCheck(mustRole = "admin")
+    public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody IdRequest idRequest, HttpServletRequest request) {
+        if (idRequest == null || idRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = idRequest.getId();
+        // 判断是否存在
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (interfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        // 判断该接口是否可以调用
+        com.yanweiyi.miapiclientsdk.model.User testUser = new com.yanweiyi.miapiclientsdk.model.User();
+        testUser.setUsername("test");
+        String testResult = miApiClient.getUsernameByPost(testUser);
+        if (StringUtils.isBlank(testResult)) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败");
+        }
+        // 修改接口数据库中的状态字段为 1
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
+        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 下线
+     *
+     * @param idRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/offline")
+    @AuthCheck(mustRole = "admin")
+    public BaseResponse<Boolean> offlineInterfaceInfo(@RequestBody IdRequest idRequest, HttpServletRequest request) {
+        if (idRequest == null || idRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = idRequest.getId();
+        // 判断是否存在
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (interfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        // 修改接口数据库中的状态字段为 0
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
+        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 测试调用
+     *
+     * @param interfaceInfoInvokeRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/invoke")
+    public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest, HttpServletRequest request) {
+        if (interfaceInfoInvokeRequest == null || interfaceInfoInvokeRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = interfaceInfoInvokeRequest.getId();
+        String userRequestParams = interfaceInfoInvokeRequest.getUserRequestParams();
+        // 判断是否存在
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (interfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        if (interfaceInfo.getStatus() != InterfaceInfoStatusEnum.ONLINE.getValue()) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口已关闭");
+        }
+        // 判断该接口是否可以调用
+        User loginUser = userService.getLoginUser(request);
+        String accessKey = loginUser.getAccessKey();
+        String secretKey = loginUser.getSecretKey();
+        MiApiClient tempClient = new MiApiClient(accessKey, secretKey);
+        Gson gson = new Gson();
+        com.yanweiyi.miapiclientsdk.model.User user = gson.fromJson(userRequestParams, com.yanweiyi.miapiclientsdk.model.User.class);
+        String result = tempClient.getUsernameByPost(user);
+        return ResultUtils.success(result);
+    }
 }

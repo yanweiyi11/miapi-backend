@@ -13,11 +13,16 @@
     <artifactId>miapi-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>miapi-backend</name>
-    <description>springboot 初始项目</description>
+    <description>miapi-backend</description>
     <properties>
         <java.version>1.8</java.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>com.yanweiyi</groupId>
+            <artifactId>miapi-client-sdk</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

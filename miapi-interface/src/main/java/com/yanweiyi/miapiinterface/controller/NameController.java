@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 /**
  * 名词 API
@@ -38,6 +36,7 @@ public class NameController {
 
         // 校验参数
         // TODO 查询数据库是否存在 accessKey
+
         // TODO 校验缓存中是否存有 nonce
         // TODO timestamp 不能跟当前时间差太久
 

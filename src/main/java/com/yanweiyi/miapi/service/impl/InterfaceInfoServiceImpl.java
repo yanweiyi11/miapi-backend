@@ -11,10 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 /**
-* @author 27645
-* @description 针对表【interface_info(接口信息)】的数据库操作Service实现
-* @createDate 2024-04-05 23:46:29
-*/
+ * @author 27645
+ * @description 针对表【interface_info(接口信息)】的数据库操作Service实现
+ * @createDate 2024-04-05 23:46:29
+ */
 @Service
 public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, InterfaceInfo> implements InterfaceInfoService {
 
@@ -30,6 +30,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         String name = interfaceInfo.getName();
         String description = interfaceInfo.getDescription();
         String url = interfaceInfo.getUrl();
+        String requestParams = interfaceInfo.getRequestParams();
         String requestHeader = interfaceInfo.getRequestHeader();
         String responseHeader = interfaceInfo.getResponseHeader();
         Integer status = interfaceInfo.getStatus();
@@ -51,8 +52,11 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         if (StringUtils.isNotBlank(description) && description.length() > 100) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口描述过长");
         }
-        if (StringUtils.isNotBlank(url) && name.length() > 500) {
+        if (StringUtils.isNotBlank(url) && url.length() > 500) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口地址过长");
+        }
+        if (StringUtils.isNotBlank(requestParams) && requestParams.length() > 1000) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数过长");
         }
         if (StringUtils.isNotBlank(requestHeader) && requestHeader.length() > 3000) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求头内容过长");
@@ -67,7 +71,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求类型不合法");
         }
     }
-    
+
 }
 
 
