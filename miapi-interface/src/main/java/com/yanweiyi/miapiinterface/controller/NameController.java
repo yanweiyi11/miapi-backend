@@ -16,7 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 public class NameController {
 
     @GetMapping
-    public String gatNameByGet(String name) {
+    public String gatNameByGet(String name, HttpServletRequest request) {
+        System.out.println(request.getHeader("mi"));
         return "GET 你的名字是 " + name;
     }
 
@@ -47,6 +48,8 @@ public class NameController {
         if (!sign.equals(serverSign)){
             throw new RuntimeException("无权限");
         }
+        String result = "POST 用户名是 " + user.getUsername();
+        // 调用成功后，添加调用次数
 
         return "POST 用户名是 " + user.getUsername();
     }

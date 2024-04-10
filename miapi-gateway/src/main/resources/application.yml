@@ -1,0 +1,27 @@
+server:
+  port: 8090
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: add_request_header_route
+          uri: http://localhost:8123
+          predicates:
+            - Path=/api/**
+          filters:
+            - AddRequestHeader=mi, helloworld
+            - AddRequestParameter=name, dog
+            - name: CircuitBreaker
+              args:
+                name: myCircuitBreaker
+                fallbackUri: forward:/fallback
+        - id: mi-fallback
+          uri: http://www.sogou.com
+          predicates:
+            - Path=/fallback
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway: trace
