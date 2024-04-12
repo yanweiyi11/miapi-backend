@@ -20,6 +20,8 @@ import java.util.Map;
 @Slf4j
 public class MiApiClient {
 
+    public static final String GATEWAY_HOST = "http://localhost:8090";
+
     private String accessKey;
 
     private String secretKey;
@@ -33,7 +35,7 @@ public class MiApiClient {
         // 可以单独传入http参数，这样参数会自动做URL编码，拼接在URL中
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("name", name);
-        return HttpUtil.get("http://localhost:8123/api/name", paramMap);
+        return HttpUtil.get(GATEWAY_HOST + "/api/name", paramMap);
 
     }
 
@@ -41,13 +43,13 @@ public class MiApiClient {
         // 可以单独传入http参数，这样参数会自动做URL编码，拼接在URL中
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("name", name);
-        return HttpUtil.post("http://localhost:8123/api/name", paramMap);
+        return HttpUtil.post(GATEWAY_HOST + "/api/name", paramMap);
     }
 
     public String getUsernameByPost(User user) {
         String json = JSONUtil.toJsonStr(user);
 
-        HttpResponse httpResponse = HttpRequest.post("http://localhost:8123/api/name/json")
+        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/name/json")
                 .addHeaders(getHeaderMap(json))
                 .body(json)
                 .execute();

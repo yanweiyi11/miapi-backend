@@ -13,14 +13,4 @@ public class MiapiGatewayApplication {
         SpringApplication.run(MiapiGatewayApplication.class, args);
     }
 
-    @Bean
-    public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
-        return builder.routes()
-                .route("tobaidu", r -> r.path("/baidu")
-                        .uri("http://www.baidu.com"))
-                .route("totianmiicu ", r -> r.path("/tianmiicu")
-                        .uri("http://tianmi.icu"))
-                .build();
-    }
-
 }

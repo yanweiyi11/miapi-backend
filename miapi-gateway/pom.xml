@@ -39,6 +39,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.yanweiyi</groupId>
+            <artifactId>miapi-client-sdk</artifactId>
+            <version>0.0.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
