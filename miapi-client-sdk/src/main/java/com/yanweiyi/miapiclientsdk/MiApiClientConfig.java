@@ -7,7 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-
+/**
+ * MiApi 客户端配置
+ */
 @Configuration
 @ConfigurationProperties("miapi.client")
 @ComponentScan

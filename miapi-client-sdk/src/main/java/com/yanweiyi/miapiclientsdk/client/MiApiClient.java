@@ -1,16 +1,12 @@
 package com.yanweiyi.miapiclientsdk.client;
 
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
-import com.yanweiyi.miapiclientsdk.model.User;
 import com.yanweiyi.miapiclientsdk.utils.SignUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,9 +18,9 @@ public class MiApiClient {
 
     public static final String GATEWAY_HOST = "http://localhost:8090";
 
-    private String accessKey;
+    private final String accessKey;
 
-    private String secretKey;
+    private final String secretKey;
 
     public MiApiClient(String accessKey, String secretKey) {
         this.accessKey = accessKey;
@@ -46,8 +42,8 @@ public class MiApiClient {
         return HttpUtil.post(GATEWAY_HOST + "/api/name", paramMap);
     }
 
-    public String getUsernameByPost(User user) {
-        String json = JSONUtil.toJsonStr(user);
+    public String getJsonByPost(Map map) {
+        String json = JSONUtil.toJsonStr(map);
 
         HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/name/json")
                 .addHeaders(getHeaderMap(json))
@@ -66,7 +62,6 @@ public class MiApiClient {
     private Map<String, String> getHeaderMap(String body) {
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("accessKey", accessKey);
-        headerMap.put("nonce", String.valueOf(RandomUtil.randomInt(100)));
         headerMap.put("body", body);
         headerMap.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
         headerMap.put("sign", SignUtils.genSign(body, secretKey));

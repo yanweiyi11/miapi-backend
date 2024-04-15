@@ -2,7 +2,7 @@ server:
   port: 8123
   servlet:
     context-path: /api
-miapi:
-  client:
-    access-key: 123456
-    secret-key: qwerty
+#miapi:
+#  client:
+#    access-key: 6428b3e3d6c4645c2b77558e8acb6f96
+#    secret-key: c0fbb29beed52450c01e972bb84201ec
