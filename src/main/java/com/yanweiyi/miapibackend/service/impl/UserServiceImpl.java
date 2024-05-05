@@ -62,11 +62,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
             // 2. 加密
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
-            // 3. 插入数据
-            User user = new User();
-            // 分配 AK, SK
+            // 3. 生成 AK, SK
             String accessKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomInt(0, 100));
             String secretKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomInt(1000, 2000));
+            // 4. 插入数据
+            User user = new User();
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
             user.setAccessKey(accessKey);

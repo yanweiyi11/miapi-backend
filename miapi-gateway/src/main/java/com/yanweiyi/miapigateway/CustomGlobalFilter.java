@@ -38,7 +38,7 @@ import java.util.Objects;
 public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
     private static final List<String> IP_WHITE_LIST = Arrays.asList("127.0.0.1");
-    private static final String INTERFACE_HOST = "http://localhost:8123";
+    private static final String INTERFACE_HOST = "http://localhost:8200";
 
     @DubboReference
     private InnerUserService innerUserService;
@@ -56,7 +56,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         String hostString = Objects.requireNonNull(request.getRemoteAddress()).getHostString();
 
         String url = INTERFACE_HOST + request.getPath().value();
-        String method = request.getMethod().toString();
+        String method = String.valueOf(request.getMethod());
 
         // 请求日志
         log.info("request id: {}", request.getId());
@@ -74,9 +74,9 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         HttpHeaders headers = request.getHeaders();
         // 获取请求头中的参数
         String accessKey = headers.getFirst("accessKey");
-        String body = headers.getFirst("body");
-        String timestamp = headers.getFirst("timestamp");
         String sign = headers.getFirst("sign");
+        String timestamp = headers.getFirst("timestamp");
+        String nonce = headers.getFirst("nonce");
 
         // ================ 校验参数 ================
         // 去数据库中查是否已分配给用户
@@ -99,7 +99,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
         // 从数据库中查出 secretKey
         String secretKey = user.getSecretKey();
-        String serverSign = SignUtils.genSign(body, secretKey);
+        String serverSign = SignUtils.genSign(timestamp, nonce, secretKey);
         if (sign != null && !sign.equals(serverSign)) { // 校验签名是否一致
             return handleNoAuth(response);
         }

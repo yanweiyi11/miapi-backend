@@ -67,7 +67,6 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求类型不合法");
         }
     }
-
 }
 
 

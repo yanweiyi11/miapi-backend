@@ -49,6 +49,11 @@ public class InterfaceInfo implements Serializable {
     private String responseHeader;
 
     /**
+     * 在 SDK 中的方法名
+     */
+    private String sdkMethodName;
+
+    /**
      * 接口状态（0-关闭，1-开启）
      */
     private Integer status;
@@ -76,7 +81,6 @@ public class InterfaceInfo implements Serializable {
     /**
      * 是否删除(0-未删, 1-已删)
      */
-    @TableLogic
     private Integer isDelete;
 
     @TableField(exist = false)

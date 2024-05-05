@@ -11,13 +11,14 @@ public class SignUtils {
     /**
      * 生成签名
      *
-     * @param body
+     * @param timestamp
+     * @param nonce
      * @param secretKey
      * @return
      */
-    public static String genSign(String body, String secretKey) {
+    public static String genSign(String timestamp, String nonce, String secretKey) {
         Digester md5 = new Digester(DigestAlgorithm.SHA256);
-        String content = body + "&" + secretKey;
+        String content = "mi-api@" + timestamp + "&" + nonce + "&" + secretKey;
         return md5.digestHex(content);
     }
 }

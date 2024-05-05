@@ -1,11 +1,11 @@
 server:
-  port: 8090
+  port: 8300
 spring:
   cloud:
     gateway:
       routes:
         - id: api_route
-          uri: http://localhost:8123/api
+          uri: http://localhost:8200/api
           predicates:
             - Path=/api/**
 logging:
@@ -19,7 +19,7 @@ dubbo:
   application:
     # 设置应用的名称
     name: dubbo-springboot-demo-provider
-  # 指定使用 Dubbo 协议，且端口设置为 -1，表示随机分配可用端口
+  # 指定使用 Dubbo 协议，且端口设置为 22223
   protocol:
     name: dubbo
     port: 22223

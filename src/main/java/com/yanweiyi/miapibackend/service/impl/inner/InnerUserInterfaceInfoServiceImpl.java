@@ -29,6 +29,7 @@ public class InnerUserInterfaceInfoServiceImpl implements InnerUserInterfaceInfo
      * @return
      */
     @Override
+    // TODO 添加锁，防止用户瞬间调用大量接口次数
     public boolean invokeCount(long interfaceInfoId, long userId) {
         if (interfaceInfoId <= 0 || userId <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

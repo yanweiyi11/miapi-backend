@@ -1,5 +1,5 @@
 -- 创建库
-create database if not exists miapi_db;
+create database if not exists miapi_db charset utf8;
 
 -- 切换库
 use miapi_db;

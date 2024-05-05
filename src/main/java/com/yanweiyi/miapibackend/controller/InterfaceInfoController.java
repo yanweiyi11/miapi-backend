@@ -2,7 +2,6 @@ package com.yanweiyi.miapibackend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.gson.Gson;
 import com.yanweiyi.miapibackend.annotation.AuthCheck;
 import com.yanweiyi.miapibackend.common.*;
 import com.yanweiyi.miapibackend.constant.CommonConstant;
@@ -14,6 +13,7 @@ import com.yanweiyi.miapibackend.model.dto.interfaceinfo.InterfaceInfoUpdateRequ
 import com.yanweiyi.miapibackend.service.InterfaceInfoService;
 import com.yanweiyi.miapibackend.service.UserService;
 import com.yanweiyi.miapiclientsdk.client.MiApiClient;
+import com.yanweiyi.miapiclientsdk.utils.InvokeUtils;
 import com.yanweiyi.miapicommon.model.entity.InterfaceInfo;
 import com.yanweiyi.miapicommon.model.entity.User;
 import com.yanweiyi.miapicommon.model.enums.InterfaceInfoStatusEnum;
@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 接口管理
@@ -41,10 +39,6 @@ public class InterfaceInfoController {
 
     @Resource
     private UserService userService;
-
-    @Resource
-    private MiApiClient miApiClient;
-
     // region 增删改查
 
     /**
@@ -203,12 +197,11 @@ public class InterfaceInfoController {
      * 发布
      *
      * @param idRequest
-     * @param request
      * @return
      */
     @PostMapping("/online")
     @AuthCheck(mustRole = "admin")
-    public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody IdRequest idRequest, HttpServletRequest request) {
+    public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody IdRequest idRequest) {
         if (idRequest == null || idRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -218,13 +211,8 @@ public class InterfaceInfoController {
         if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        // 判断该接口是否可以调用
-        Map map = new HashMap<>();
-        map.put("username", "test");
-        String testResult = miApiClient.getJsonByPost(map);
-        if (StringUtils.isBlank(testResult)) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败");
-        }
+        // TODO 判断该接口是否可以调用（考虑参数）
+
         // 修改接口数据库中的状态字段为 1
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
         boolean result = interfaceInfoService.updateById(interfaceInfo);
@@ -235,12 +223,11 @@ public class InterfaceInfoController {
      * 下线
      *
      * @param idRequest
-     * @param request
      * @return
      */
     @PostMapping("/offline")
     @AuthCheck(mustRole = "admin")
-    public BaseResponse<Boolean> offlineInterfaceInfo(@RequestBody IdRequest idRequest, HttpServletRequest request) {
+    public BaseResponse<Boolean> offlineInterfaceInfo(@RequestBody IdRequest idRequest) {
         if (idRequest == null || idRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -282,10 +269,17 @@ public class InterfaceInfoController {
         User loginUser = userService.getLoginUser(request);
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
-        MiApiClient tempClient = new MiApiClient(accessKey, secretKey);
-        Gson gson = new Gson();
-        Map map = gson.fromJson(userRequestParams, Map.class);
-        String result = tempClient.getJsonByPost(map);
-        return ResultUtils.success(result);
+        // 创建新 client 使用用户的 ak、sk 避免使用管理员账户
+        MiApiClient client = new MiApiClient(accessKey, secretKey);
+        String methodName = interfaceInfo.getSdkMethodName();
+        try {
+            Object result = InvokeUtils.invokeClientMethod(client, methodName, userRequestParams);
+            if (result == null) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口调用失败，请重试");
+            }
+            return ResultUtils.success(result);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
     }
 }
